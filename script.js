@@ -5,13 +5,14 @@ let map = {};
 function start(){
   document.getElementById("start").disabled = true;
   this.drawBoardLines();
+  this.getRandomCellValues();
 }
 
 function drawBoardQuadrants() {
   for(let x = 0; x < this.MAP_SIZE; x++){
     for(let y = 0; y< this.MAP_SIZE; y++){
       let tile = document.createElement("canvas");
-      tile.id = x + "," + y;
+      tile.id = getKey(x,y);
       tile.height= PIXEL_SIZE;
       tile.width= PIXEL_SIZE;
       tile.style.position = "absolute";
@@ -40,7 +41,7 @@ function drawBoardLines() {
   for(let x = 0; x < this.MAP_SIZE; x++){
     for(let y = 0; y< this.MAP_SIZE; y++){
       let tile = document.createElement("canvas");
-      tile.id = x + "," + y;
+      tile.id = getKey(x,y);
       tile.height= PIXEL_SIZE;
       tile.width= PIXEL_SIZE;
       tile.style.position = "absolute";
@@ -61,10 +62,22 @@ function drawBoardLines() {
   }
 }
 
+function getRandomCellValues(){
+  for (let x = 0; x<this.MAP_SIZE; x++){
+    for (let y = 0; y<this.MAP_SIZE; y++){
+      map[getKey(x,y)].value = Math.floor((Math.random() * 10) + 1);
+      let cell = document.getElementById(getKey(x,y));
+      let ctx = cell.getContext("2d");
+      ctx.font = "10px Arial";
+      ctx.fillText(map[getKey(x,y)].value, 0, 12);
+    }
+  }
+}
+
 function credits(){
   alert("Created by Alan Henderson for CS 6110");
 }
 
 function getKey(x,y){
-  return x.toString() + y.toString();
+  return x.toString() + "," + y.toString();
 }
