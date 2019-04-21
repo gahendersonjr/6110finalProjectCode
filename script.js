@@ -1,6 +1,7 @@
 this.PIXEL_SIZE = 25;
 this.MAP_SIZE = 40;
 let map = {};
+let borderCells = [];
 let blueAverage;
 let redAverage;
 let yellowAverage;
@@ -14,7 +15,34 @@ function start(){
   document.getElementById("start").disabled = true;
   this.drawBoardQuadrants();
   this.getRandomCellValues();
-  this.calculateStdDevs();
+  this.findBorderCells();
+  // this.calculateStdDevs();
+}
+
+function findBorderCells(){
+  borderCells = [];
+  for(let x = 0; x < this.MAP_SIZE; x++){
+    for(let y = 0; y< this.MAP_SIZE; y++){
+      let cell = isBorderCell(x,y);
+      if(cell[0]){
+        borderCells.push({cell: getKey(x,y), neighborColor: cell[1]});
+      }
+    }
+  }
+  //borderCells should be populated now
+}
+
+function isBorderCell(x,y){
+  if(map[getKey(x-1, y)] && map[getKey(x-1, y)].color != map[getKey(x,y)].color){
+    return [true, map[getKey(x-1,y)].color];
+  }else if(map[getKey(x+1, y)] && map[getKey(x+1, y)].color != map[getKey(x,y)].color){
+    return [true, map[getKey(x+1,y)].color];
+  }else if(map[getKey(x, y+1)] && map[getKey(x, y+1)].color != map[getKey(x,y)].color){
+    return [true, map[getKey(x,y+1)].color];
+  }else if(map[getKey(x, y-1)] && map[getKey(x, y-1)].color != map[getKey(x,y)].color){
+    return [true, map[getKey(x,y-1)].color];
+  }
+  return [false];
 }
 
 function calculateAverages(){
