@@ -25,11 +25,11 @@ function findBorderCells(){
     for(let y = 0; y< this.MAP_SIZE; y++){
       let cell = isBorderCell(x,y);
       if(cell[0]){
-        borderCells.push({cell: getKey(x,y), neighborColor: cell[1]});
+        borderCells.push({cell: map[getKey(x,y)], neighborColor: cell[1]});
       }
     }
   }
-  //borderCells should be populated now
+  console.log(borderCells);
 }
 
 function isBorderCell(x,y){
