@@ -15,7 +15,7 @@ function start(){
   this.getRandomCellValues();
   // this.findBorderCells();
   // this.calculateStdDevs();
-  for(let i = 0; i<100;i++){
+  for(let i = 0; i<10;i++){
     this.trade();
   }
   this.drawBoard(40);
@@ -29,17 +29,17 @@ function trade(){
   // this.calculateStdDevs();
   for(let i = 0; i<borderCells.length; i++){
     for(let j = 0; j<borderCells.length; j++){
-      if(i!=j && borderCells[i].neighborColor == borderCells[j].cell.color && borderCells[j].neighborColor == borderCells[i].cell.color){
+      if(i!=j){
         let mapClone = Object.assign({}, map);
-        console.log("hi");
         //get averages
         calculateAverages();
         //if both candidates are closer to the others average, swap
-        if(Math.abs(averages[borderCells[i].cell.color] - borderCells[i].cell.value) > Math.abs(averages[borderCells[i].cell.color] - borderCells[j].cell.value) &&
-          Math.abs(averages[borderCells[j].cell.color] - borderCells[j].cell.value) > Math.abs(averages[borderCells[j].cell.color] - borderCells[i].cell.value)){
-            map[getKey(borderCells[i].cell.x, borderCells[i].cell.y)] = borderCells[j].cell;
-            map[getKey(borderCells[j].cell.x, borderCells[j].cell.y)] = borderCells[i].cell;
-            console.log("swap");
+        if(Math.abs(averages[borderCells[i].color] - borderCells[i].value) > Math.abs(averages[borderCells[i].color] - borderCells[j].value) &&
+          Math.abs(averages[borderCells[j].color] - borderCells[j].value) > Math.abs(averages[borderCells[j].color] - borderCells[i].value)){
+            console.log(borderCells[i]);
+            console.log(borderCells[j]);
+            toggleColor(getKey(borderCells[i].x, borderCells[i].y));
+            toggleColor(getKey(borderCells[j].x, borderCells[j].y));
             return;
           }
       }
@@ -48,28 +48,36 @@ function trade(){
 
 }
 
+function toggleColor(key){
+  if(map[key].color=="blue"){
+    map[key].color="red";
+  }else if(map[key].color=="red"){
+    map[key].color="blue";
+  }
+}
+
+
 function findBorderCells(){
   borderCells = [];
   for(let x = 0; x < this.MAP_SIZE; x++){
     for(let y = 0; y< this.MAP_SIZE; y++){
-      let cell = isBorderCell(x,y);
-      if(cell[0]){
-        borderCells.push({cell: map[getKey(x,y)], neighborColor: cell[1]});
+      if(isBorderCell(x,y)){
+        borderCells.push(map[getKey(x,y)]);
       }
   }
 }}
 
 function isBorderCell(x,y){
   if(map[getKey(x-1, y)] && map[getKey(x-1, y)].color != map[getKey(x,y)].color){
-    return [true, map[getKey(x-1,y)].color];
+    return true;
   }else if(map[getKey(x+1, y)] && map[getKey(x+1, y)].color != map[getKey(x,y)].color){
-    return [true, map[getKey(x+1,y)].color];
+    return true;
   }else if(map[getKey(x, y+1)] && map[getKey(x, y+1)].color != map[getKey(x,y)].color){
-    return [true, map[getKey(x,y+1)].color];
+    return true;
   }else if(map[getKey(x, y-1)] && map[getKey(x, y-1)].color != map[getKey(x,y)].color){
-    return [true, map[getKey(x,y-1)].color];
+    return true;
   }
-  return [false];
+  return false;
 }
 
 function calculateAverages(){
@@ -167,8 +175,9 @@ function drawBoard(){
 function getRandomCellValues(){
   for (let x = 0; x<this.MAP_SIZE; x++){
     for (let y = 0; y<this.MAP_SIZE; y++){
-      map[getKey(x,y)].value = Math.floor((Math.random() * 999) + 1);
-      originalMap[getKey(x,y)].value = Math.floor((Math.random() * 999) + 1);
+      let value = Math.floor((Math.random() * 999) + 1);
+      map[getKey(x,y)].value = value;
+      originalMap[getKey(x,y)].value = value;
     }
   }
 }
