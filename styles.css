@@ -7,17 +7,3 @@
   background: red;
   border: 1px solid #000000;
 }
-
-.yellow {
-  background: yellow;
-  border: 1px solid #000000;
-}
-
-.green {
-  background: green;
-  border: 1px solid #000000;
-}
-
-.test {
-  background: orange !important;
-}

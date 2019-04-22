@@ -1,22 +1,50 @@
 this.PIXEL_SIZE = 25;
-this.MAP_SIZE = 40;
+this.MAP_SIZE = 10;
 let map = {};
 let borderCells = [];
-let blueAverage;
-let redAverage;
-let yellowAverage;
-let greenAverage;
-let greenStdDev;
+let averages = {}
+// let blueAverage;
+// let redAverage;
 let redStdDev;
 let blueStdDev;
-let yellowStdDev;
 
 function start(){
   document.getElementById("start").disabled = true;
   this.drawBoardQuadrants();
   this.getRandomCellValues();
-  this.findBorderCells();
+  // this.findBorderCells();
   // this.calculateStdDevs();
+  for(let i = 0; i<100;i++){
+    this.trade();
+  }
+  this.drawBoard();
+  // this.calculateStdDevs();
+}
+
+function trade(){
+  // this.calculateStdDevs();
+  this.findBorderCells();
+  //search for and execute border cells
+  // this.calculateStdDevs();
+  for(let i = 0; i<borderCells.length; i++){
+    for(let j = 0; j<borderCells.length; j++){
+      if(i!=j && borderCells[i].neighborColor == borderCells[j].cell.color && borderCells[j].neighborColor == borderCells[i].cell.color){
+        let mapClone = Object.assign({}, map);
+        console.log("hi");
+        //get averages
+        calculateAverages();
+        //if both candidates are closer to the others average, swap
+        if(Math.abs(averages[borderCells[i].cell.color] - borderCells[i].cell.value) > Math.abs(averages[borderCells[i].cell.color] - borderCells[j].cell.value) &&
+          Math.abs(averages[borderCells[j].cell.color] - borderCells[j].cell.value) > Math.abs(averages[borderCells[j].cell.color] - borderCells[i].cell.value)){
+            map[getKey(borderCells[i].cell.x, borderCells[i].cell.y)] = borderCells[j].cell;
+            map[getKey(borderCells[j].cell.x, borderCells[j].cell.y)] = borderCells[i].cell;
+            console.log("swap");
+            return;
+          }
+      }
+    }
+  }
+
 }
 
 function findBorderCells(){
@@ -27,10 +55,8 @@ function findBorderCells(){
       if(cell[0]){
         borderCells.push({cell: map[getKey(x,y)], neighborColor: cell[1]});
       }
-    }
   }
-  console.log(borderCells);
-}
+}}
 
 function isBorderCell(x,y){
   if(map[getKey(x-1, y)] && map[getKey(x-1, y)].color != map[getKey(x,y)].color){
@@ -46,68 +72,45 @@ function isBorderCell(x,y){
 }
 
 function calculateAverages(){
-  blueAverage = 0;
-  redAverage = 0;
-  yellowAverage = 0;
-  greenAverage = 0;
+  averages["blue"] = 0;
+  averages["red"] = 0;
   for(let x = 0; x < this.MAP_SIZE; x++){
     for(let y = 0; y < this.MAP_SIZE; y++){
       let cell = map[getKey(x,y)];
       if(cell.color=="blue"){
-        blueAverage += cell.value;
+        averages["blue"] += cell.value;
       }else if(cell.color=="red"){
-        redAverage += cell.value;
-      }else if(cell.color=="yellow"){
-        yellowAverage += cell.value;
-      }else if(cell.color=="green"){
-        greenAverage += cell.value;
+        averages["red"] += cell.value;
       }
     }
   }
-  blueAverage /=400;
-  redAverage /=400;
-  yellowAverage /=400;
-  greenAverage /=400;
+  averages["blue"] /= (Math.pow(MAP_SIZE, 2)/2);
+  averages["red"] /= (Math.pow(MAP_SIZE, 2)/2);
 }
 
 function calculateStdDevs(){
   calculateAverages();
-  let greenAvgSquaredDifferece = 0;
   let redAvgSquaredDifferece = 0;
   let blueAvgSquaredDifferece = 0;
-  let yellowAvgSquaredDifferece = 0;
   for(let x = 0; x < this.MAP_SIZE; x++){
     for(let y = 0; y < this.MAP_SIZE; y++){
       let cell = map[getKey(x,y)];
       if(cell.color=="blue"){
-        blueAvgSquaredDifferece += Math.pow(cell.value-blueAverage, 2);
+        blueAvgSquaredDifferece += Math.pow(cell.value-averages["blue"], 2);
       }else if(cell.color=="red"){
-        redAvgSquaredDifferece += Math.pow(cell.value-redAverage, 2);
-      }else if(cell.color=="yellow"){
-        yellowAvgSquaredDifferece += Math.pow(cell.value-yellowAverage, 2);
-      }else if(cell.color=="green"){
-        greenAvgSquaredDifferece += Math.pow(cell.value-greenAverage, 2);
+        redAvgSquaredDifferece += Math.pow(cell.value-averages["red"], 2);
       }
     }
   }
-  greenAvgSquaredDifferece /= 400;
-  redAvgSquaredDifferece /= 400;
-  blueAvgSquaredDifferece /= 400;
-  yellowAvgSquaredDifferece /= 400;
+  redAvgSquaredDifferece /= (Math.pow(MAP_SIZE, 2)/2);
+  blueAvgSquaredDifferece /= (Math.pow(MAP_SIZE, 2)/2);
 
-  let greenStdDev = Math.sqrt(greenAvgSquaredDifferece);
-  let redStdDev = Math.sqrt(redAvgSquaredDifferece);
-  let blueStdDev = Math.sqrt(blueAvgSquaredDifferece);
-  let yellowStdDev = Math.sqrt(yellowAvgSquaredDifferece);
-  alert("green average: " + greenAverage.toString()
-        +" red average: " + redAverage.toString()
-      +" blue average: " + blueAverage.toString()
-    +" yellow average: " + yellowAverage.toString()
-    +"green std dev: " + greenStdDev.toString()
-          +" red std dev: " + redStdDev.toString()
-        +" blue std dev: " + blueStdDev.toString()
-      +" yellow std dev: " + yellowStdDev.toString());
+  redStdDev = Math.sqrt(redAvgSquaredDifferece);
+  blueStdDev = Math.sqrt(blueAvgSquaredDifferece);
+  alert(" red std dev: " + redStdDev.toString() + "\n"
+        +" blue std dev: " + blueStdDev.toString());
 }
+
 function drawBoardQuadrants() {
   for(let x = 0; x < this.MAP_SIZE; x++){
     for(let y = 0; y< this.MAP_SIZE; y++){
@@ -118,18 +121,10 @@ function drawBoardQuadrants() {
       tile.style.position = "absolute";
       tile.style.left = (x*PIXEL_SIZE) + "px";
       tile.style.top = (y*PIXEL_SIZE + 40) + "px";
-      if(x<20){
-        if(y<20){
+      if(x<MAP_SIZE/2){
           map[getKey(x,y)] = {x: x, y:y, color: "blue"};
-        }else{
-          map[getKey(x,y)] = {x: x, y:y, color: "red"};
-        }
       }else{
-        if(y<20){
-          map[getKey(x,y)] = {x: x, y:y, color: "yellow"};
-        }else{
-          map[getKey(x,y)] = {x: x, y:y, color: "green"};
-        }
+        map[getKey(x,y)] = {x: x, y:y, color: "red"};
       }
       tile.classList.add(map[getKey(x,y)].color);
       document.getElementById("board").appendChild(tile);
@@ -151,13 +146,33 @@ function drawBoardLines() {
         map[getKey(x,y)] = {x: x, y:y, color: "blue"};
       }else if (x<20){
         map[getKey(x,y)] = {x: x, y:y, color: "red"};
-      }else if(x<30){
-        map[getKey(x,y)] = {x: x, y:y, color: "yellow"};
-      }else{
-        map[getKey(x,y)] = {x: x, y:y, color: "green"};
       }
       tile.classList.add(map[getKey(x,y)].color);
       document.getElementById("board").appendChild(tile);
+    }
+  }
+}
+
+function drawBoard(){
+  //remove existing canvas elements
+  let board = document.getElementById("board");
+  while(board.firstChild){
+    board.removeChild(board.firstChild);
+  }
+  for(let x = 0; x < this.MAP_SIZE; x++){
+    for(let y = 0; y< this.MAP_SIZE; y++){
+      let tile = document.createElement("canvas");
+      tile.id = getKey(x,y);
+      tile.height= PIXEL_SIZE;
+      tile.width= PIXEL_SIZE;
+      tile.style.position = "absolute";
+      tile.style.left = (x*PIXEL_SIZE) + "px";
+      tile.style.top = (y*PIXEL_SIZE + 40) + "px";
+      tile.classList.add(map[getKey(x,y)].color);
+      document.getElementById("board").appendChild(tile);
+      let ctx = tile.getContext("2d");
+      ctx.font = "12px Arial";
+      ctx.fillText(map[getKey(x,y)].value, 0, 13);
     }
   }
 }
