@@ -201,7 +201,6 @@ function makeMap() {
 }
 
 function drawBoard(){
-  //remove existing canvas elements
   let board = document.getElementById("board");
   while(board.firstChild){
     board.removeChild(board.firstChild);
