@@ -1,5 +1,6 @@
 this.PIXEL_SIZE = 25;
 this.MAP_SIZE = 10;
+let originalMap = {};
 let map = {};
 let borderCells = [];
 let averages = {}
@@ -10,14 +11,14 @@ let blueStdDev;
 
 function start(){
   document.getElementById("start").disabled = true;
-  this.drawBoardQuadrants();
+  this.makeMap();
   this.getRandomCellValues();
   // this.findBorderCells();
   // this.calculateStdDevs();
   for(let i = 0; i<100;i++){
     this.trade();
   }
-  this.drawBoard();
+  this.drawBoard(40);
   // this.calculateStdDevs();
 }
 
@@ -111,44 +112,16 @@ function calculateStdDevs(){
         +" blue std dev: " + blueStdDev.toString());
 }
 
-function drawBoardQuadrants() {
+function makeMap() {
   for(let x = 0; x < this.MAP_SIZE; x++){
     for(let y = 0; y< this.MAP_SIZE; y++){
-      let tile = document.createElement("canvas");
-      tile.id = getKey(x,y);
-      tile.height= PIXEL_SIZE;
-      tile.width= PIXEL_SIZE;
-      tile.style.position = "absolute";
-      tile.style.left = (x*PIXEL_SIZE) + "px";
-      tile.style.top = (y*PIXEL_SIZE + 40) + "px";
       if(x<MAP_SIZE/2){
           map[getKey(x,y)] = {x: x, y:y, color: "blue"};
+          originalMap[getKey(x,y)] = {x: x, y:y, color: "blue"};
       }else{
         map[getKey(x,y)] = {x: x, y:y, color: "red"};
+        originalMap[getKey(x,y)] = {x: x, y:y, color: "red"};
       }
-      tile.classList.add(map[getKey(x,y)].color);
-      document.getElementById("board").appendChild(tile);
-    }
-  }
-}
-
-function drawBoardLines() {
-  for(let x = 0; x < this.MAP_SIZE; x++){
-    for(let y = 0; y< this.MAP_SIZE; y++){
-      let tile = document.createElement("canvas");
-      tile.id = getKey(x,y);
-      tile.height= PIXEL_SIZE;
-      tile.width= PIXEL_SIZE;
-      tile.style.position = "absolute";
-      tile.style.left = (x*PIXEL_SIZE) + "px";
-      tile.style.top = (y*PIXEL_SIZE + 40) + "px";
-      if(x<10){
-        map[getKey(x,y)] = {x: x, y:y, color: "blue"};
-      }else if (x<20){
-        map[getKey(x,y)] = {x: x, y:y, color: "red"};
-      }
-      tile.classList.add(map[getKey(x,y)].color);
-      document.getElementById("board").appendChild(tile);
     }
   }
 }
@@ -161,6 +134,7 @@ function drawBoard(){
   }
   for(let x = 0; x < this.MAP_SIZE; x++){
     for(let y = 0; y< this.MAP_SIZE; y++){
+      //original
       let tile = document.createElement("canvas");
       tile.id = getKey(x,y);
       tile.height= PIXEL_SIZE;
@@ -168,9 +142,22 @@ function drawBoard(){
       tile.style.position = "absolute";
       tile.style.left = (x*PIXEL_SIZE) + "px";
       tile.style.top = (y*PIXEL_SIZE + 40) + "px";
-      tile.classList.add(map[getKey(x,y)].color);
+      tile.classList.add(originalMap[getKey(x,y)].color);
       document.getElementById("board").appendChild(tile);
       let ctx = tile.getContext("2d");
+      ctx.font = "12px Arial";
+      ctx.fillText(originalMap[getKey(x,y)].value, 0, 13);
+      //end
+      tile = document.createElement("canvas");
+      tile.id = getKey(x,y);
+      tile.height= PIXEL_SIZE;
+      tile.width= PIXEL_SIZE;
+      tile.style.position = "absolute";
+      tile.style.left = (x*PIXEL_SIZE+MAP_SIZE*PIXEL_SIZE+20) + "px";
+      tile.style.top = (y*PIXEL_SIZE + 40) + "px";
+      tile.classList.add(map[getKey(x,y)].color);
+      document.getElementById("board").appendChild(tile);
+      ctx = tile.getContext("2d");
       ctx.font = "12px Arial";
       ctx.fillText(map[getKey(x,y)].value, 0, 13);
     }
@@ -181,10 +168,7 @@ function getRandomCellValues(){
   for (let x = 0; x<this.MAP_SIZE; x++){
     for (let y = 0; y<this.MAP_SIZE; y++){
       map[getKey(x,y)].value = Math.floor((Math.random() * 999) + 1);
-      let cell = document.getElementById(getKey(x,y));
-      let ctx = cell.getContext("2d");
-      ctx.font = "12px Arial";
-      ctx.fillText(map[getKey(x,y)].value, 0, 13);
+      originalMap[getKey(x,y)].value = Math.floor((Math.random() * 999) + 1);
     }
   }
 }
