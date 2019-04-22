@@ -1,5 +1,5 @@
 this.PIXEL_SIZE = 25;
-this.MAP_SIZE = 15;
+this.MAP_SIZE = 16;
 let originalMap = {};
 let map = {};
 let borderCells = [];
@@ -9,6 +9,8 @@ let blueStdDev;
 let originalRedStdDev;
 let originalBlueStdDev;
 let numTrades=0;
+let redCells = {};
+let blueCells = {};
 
 function start(){
   document.getElementById("start").disabled = true;
@@ -22,27 +24,97 @@ function start(){
   }
   this.calculateStdDevs();
   this.drawBoard();
+  this.isContinous();
 }
 
 function trade(){
   this.findBorderCells();
+  //get averages
+  calculateAverages();
   //search for and execute border cells
   for(let i = 0; i<borderCells.length; i++){
     for(let j = 0; j<borderCells.length; j++){
       if(i!=j){
-        //get averages
-        calculateAverages();
         //if both candidates are closer to the others average, swap
         if(Math.abs(averages[borderCells[i].color] - borderCells[i].value) > Math.abs(averages[borderCells[i].color] - borderCells[j].value) &&
           Math.abs(averages[borderCells[j].color] - borderCells[j].value) > Math.abs(averages[borderCells[j].color] - borderCells[i].value)){
             toggleColor(getKey(borderCells[i].x, borderCells[i].y));
             toggleColor(getKey(borderCells[j].x, borderCells[j].y));
-            return true;
+            if(isContinous()){
+              return true;
+            }else{
+              //not isContinous, change back
+              toggleColor(getKey(borderCells[i].x, borderCells[i].y));
+              toggleColor(getKey(borderCells[j].x, borderCells[j].y));
+            }
           }
       }
     }
   }
   return false;
+}
+
+function isContinous(){
+  redCells = {};
+  blueCells = {};
+  let startingRed;
+  let stargingBlue;
+  for(let x = 0; x<MAP_SIZE; x++){
+    for(let y = 0; y<MAP_SIZE; y++){
+      if(map[getKey(x,y)].color=="red"){
+        redCells[getKey(x,y)] = false;
+        startingRed = [x,y];
+      }else{
+        blueCells[getKey(x,y)] = false;
+        startingBlue = [x,y];
+      }
+    }
+  }
+  searchRed(startingRed[0], startingRed[1]);
+  for(let key in redCells){
+    if(redCells[key]==false){
+      return false;
+    }
+  }
+  searchBlue(startingBlue[0], startingBlue[1]);
+  for(let key in blueCells){
+    if(blueCells[key]==false){
+      return false;
+    }
+  }
+  return true;
+}
+
+function searchRed(x,y){
+  redCells[getKey(x,y)] = true;
+  if(x>0 && map[getKey(x-1,y)].color == "red" && redCells[getKey(x-1,y)]==false){
+      searchRed(x-1,y);
+  }
+  if(x<MAP_SIZE-1 && map[getKey(x+1,y)].color == "red" && redCells[getKey(x+1,y)]==false){
+      searchRed(x+1,y);
+  }
+  if(y>0 && map[getKey(x,y-1)].color == "red" && redCells[getKey(x,y-1)]==false){
+      searchRed(x,y-1);
+  }
+  if(y<MAP_SIZE-1 && map[getKey(x,y+1)].color == "red" && redCells[getKey(x,y+1)]==false){
+      searchRed(x,y+1);
+  }
+}
+
+function searchBlue(x,y){
+  blueCells[getKey(x,y)] = true;
+  if(x>0 && map[getKey(x-1,y)].color == "blue" && blueCells[getKey(x-1,y)]==false){
+      searchBlue(x-1,y);
+  }
+  if(x<MAP_SIZE-1 && map[getKey(x+1,y)].color == "blue" && blueCells[getKey(x+1,y)]==false){
+      searchBlue(x+1,y);
+  }
+  if(y>0 && map[getKey(x,y-1)].color == "blue" && blueCells[getKey(x,y-1)]==false){
+      searchBlue(x,y-1);
+  }
+  if(y<MAP_SIZE-1 && map[getKey(x,y+1)].color == "blue" && blueCells[getKey(x,y+1)]==false){
+      searchBlue(x,y+1);
+  }
 }
 
 function toggleColor(key){
@@ -52,7 +124,6 @@ function toggleColor(key){
     map[key].color="blue";
   }
 }
-
 
 function findBorderCells(){
   borderCells = [];
