@@ -1,51 +1,48 @@
 this.PIXEL_SIZE = 25;
-this.MAP_SIZE = 10;
+this.MAP_SIZE = 15;
 let originalMap = {};
 let map = {};
 let borderCells = [];
 let averages = {}
-// let blueAverage;
-// let redAverage;
 let redStdDev;
 let blueStdDev;
+let originalRedStdDev;
+let originalBlueStdDev;
+let numTrades=0;
 
 function start(){
   document.getElementById("start").disabled = true;
   this.makeMap();
   this.getRandomCellValues();
-  // this.findBorderCells();
-  // this.calculateStdDevs();
-  for(let i = 0; i<10;i++){
-    this.trade();
+  this.calculateStdDevs();
+  originalRedStdDev = redStdDev;
+  originalBlueStdDev = blueStdDev;
+  while(this.trade()){
+    numTrades++;
   }
-  this.drawBoard(40);
-  // this.calculateStdDevs();
+  this.calculateStdDevs();
+  this.drawBoard();
 }
 
 function trade(){
-  // this.calculateStdDevs();
   this.findBorderCells();
   //search for and execute border cells
-  // this.calculateStdDevs();
   for(let i = 0; i<borderCells.length; i++){
     for(let j = 0; j<borderCells.length; j++){
       if(i!=j){
-        let mapClone = Object.assign({}, map);
         //get averages
         calculateAverages();
         //if both candidates are closer to the others average, swap
         if(Math.abs(averages[borderCells[i].color] - borderCells[i].value) > Math.abs(averages[borderCells[i].color] - borderCells[j].value) &&
           Math.abs(averages[borderCells[j].color] - borderCells[j].value) > Math.abs(averages[borderCells[j].color] - borderCells[i].value)){
-            console.log(borderCells[i]);
-            console.log(borderCells[j]);
             toggleColor(getKey(borderCells[i].x, borderCells[i].y));
             toggleColor(getKey(borderCells[j].x, borderCells[j].y));
-            return;
+            return true;
           }
       }
     }
   }
-
+  return false;
 }
 
 function toggleColor(key){
@@ -116,8 +113,6 @@ function calculateStdDevs(){
 
   redStdDev = Math.sqrt(redAvgSquaredDifferece);
   blueStdDev = Math.sqrt(blueAvgSquaredDifferece);
-  alert(" red std dev: " + redStdDev.toString() + "\n"
-        +" blue std dev: " + blueStdDev.toString());
 }
 
 function makeMap() {
@@ -170,6 +165,23 @@ function drawBoard(){
       ctx.fillText(map[getKey(x,y)].value, 0, 13);
     }
   }
+
+  let body = document.getElementsByTagName("BODY")[0];
+  let originalText = document.createElement("p");
+  originalText.innerText="original red stddev: " + originalRedStdDev.toString() + "\n"
+                          +" original blue stddev: " + originalBlueStdDev.toString()+ "\n\n\n"
+                          + "number of trades: " + numTrades.toString();
+  originalText.style.position = "absolute";
+  originalText.style.top = (MAP_SIZE*PIXEL_SIZE + 30).toString() + "px";
+  body.appendChild(originalText);
+
+  let finalText = document.createElement("p");
+  finalText.innerText="final red stddev: " + redStdDev.toString() + "\n"
+                          +" final blue stddev: " + blueStdDev.toString();
+  finalText.style.position = "absolute";
+  finalText.style.top = (MAP_SIZE*PIXEL_SIZE + 30).toString() + "px";
+  finalText.style.left = (MAP_SIZE*PIXEL_SIZE + 20).toString() + "px";
+  body.appendChild(finalText);
 }
 
 function getRandomCellValues(){
